@@ -60,8 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
       preview.src = e.target.result;
       
       preview.onload = () => {
-        // 检查图片尺寸
-        if (preview.naturalHeight < 5) {
+        // 检查图片尺寸（因为要分成 10 份，高度至少 10px）
+        if (preview.naturalHeight < 10) {
           alert('图片高度太小，无法分区提取颜色');
           loader.style.display = 'none';
           return;
@@ -77,10 +77,10 @@ document.addEventListener('DOMContentLoaded', () => {
           const dominantColors = [extractDominantColors(preview)[0]];
           
           // 2. 提取图片顶部1/5区域的第一个颜色
-          const topColors = [extractRegionColors(preview, 0, 0.2)[0]];
+          const topColors = [extractRegionColors(preview, 0, 0.1)[0]];
           
           // 3. 提取图片底部1/5区域的第一个颜色
-          const bottomColors = [extractRegionColors(preview, 0.8, 1)[0]];
+          const bottomColors = [extractRegionColors(preview, 0.9, 1)[0]];
           
           // 显示三个区域的颜色
           displayPalette(dominantColors, dominantColorsContainer, 'Primary');
@@ -267,18 +267,18 @@ document.addEventListener('DOMContentLoaded', () => {
     return (1 + 0.05) / (L + 0.05);
   }
 
-  // 调整对比度至3:1以上
+  // 调整对比度至2:1以上
   function adjustContrast(r, g, b) {
     let contrast = getContrastRatio(r, g, b);
     
     // 如果对比度已经足够，直接返回
-    if (contrast >= 3) return [r, g, b];
+    if (contrast >= 2) return [r, g, b];
     
     // 转换为HSL调整亮度
     let [h, s, l] = rgbToHsl(r, g, b);
     
     // 逐步降低亮度直到对比度达标
-    while (contrast < 3 && l > 5) {
+    while (contrast < 2 && l > 5) {
       l = Math.max(l - 5, 5);
       const rgb = hslToRgb(h, s, l);
       contrast = getContrastRatio(...rgb);
@@ -297,10 +297,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (isWhite || isGrayscale) {
       // 使用乘法公式调整
-      // 调整亮度: B2 = 0.8 * B1
-      l = 0.8 * l;
-      // 限制在0-80之间
-      l = Math.min(Math.max(l, 0), 80);
+      // 调整亮度: L2 = 0.9 * L1
+      l = 0.9 * l;
+      // 限制在0-90之间
+      l = Math.min(Math.max(l, 0), 90);
       
       // 调整饱和度: S2 = 0.9 * S1
       s = 0.9 * s;
@@ -308,15 +308,15 @@ document.addEventListener('DOMContentLoaded', () => {
       s = Math.min(Math.max(s, 0), 90);
     } else {
       // 使用加法公式调整
-      // 调整亮度: B2 = 20 + 0.6 * B1
-      l = 20 + 0.6 * l;
-      // 限制在20-80之间
-      l = Math.min(Math.max(l, 20), 80);
+      // 调整亮度: L2 = 20 + 0.7 * L1
+      l = 20 + 0.7 * l;
+      // 限制在20-90之间
+      l = Math.min(Math.max(l, 20), 90);
       
-      // 调整饱和度: S2 = 30 + 0.6 * S1
-      s = 30 + 0.6 * s;
-      // 限制在30-90之间
-      s = Math.min(Math.max(s, 30), 90);
+      // 调整饱和度: S2 = 20 + 0.6 * S1
+      s = 20 + 0.6 * s;
+      // 限制在20-90之间
+      s = Math.min(Math.max(s, 20), 90);
     }
     
     return hslToRgb(h, s, l);
@@ -332,8 +332,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // S值*0.9
     s = s * 0.9;
     
-    // B值-15 (如果结果小于0则取0)
-    l = Math.max(l - 15, 0);
+    // L值-10 (如果结果小于0则取0)
+    l = Math.max(l - 10, 0);
     
     return hslToRgb(h, s, l);
   }
@@ -372,16 +372,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const contrastAdjusted = adjustContrast(r, g, b);
     const contrastHex = rgbToHex(...contrastAdjusted);
     
-    // 调整亮度和饱和度
-    let adjustedRGB = adjustLightnessSaturation(...contrastAdjusted);
+    // 检查原始颜色是否满足条件：对比度2:1且L<30
+    const originalContrast = getContrastRatio(r, g, b);
+    let adjustedRGB;
     
-    // 新增规则：如果原始颜色的亮度大于59，恢复原始饱和度
-    if (l_orig > 59) {
-      // 获取当前调整后的HSL值
-      const [h_adj, s_adj, l_adj] = rgbToHsl(...adjustedRGB);
+    // 新增规则：满足对比度2:1且L<30时，跳过亮度和饱和度调整
+    if (originalContrast >= 2 && l_orig < 30) {
+      adjustedRGB = contrastAdjusted; // 使用对比度调整后的颜色
+    } else {
+      // 否则进行亮度和饱和度调整
+      adjustedRGB = adjustLightnessSaturation(...contrastAdjusted);
       
-      // 使用原始饱和度值
-      adjustedRGB = hslToRgb(h_adj, s_orig, l_adj);
+      // 新增规则：如果原始颜色的亮度大于59，恢复原始饱和度
+      if (l_orig > 59) {
+        const [h_adj, s_adj, l_adj] = rgbToHsl(...adjustedRGB);
+        adjustedRGB = hslToRgb(h_adj, s_orig, l_adj);
+      }
     }
     
     const adjustedHex = rgbToHex(...adjustedRGB);
