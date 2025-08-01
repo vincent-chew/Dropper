@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // 获取DOM元素
   const uploadInput = document.getElementById('imageUpload');
   const dropZone = document.getElementById('dropZone');
   const preview = document.getElementById('imagePreview');
@@ -23,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 拖放/点击上传 功能
+  // 上传
   dropZone.addEventListener('click', () => uploadInput.click());
 
   dropZone.addEventListener('dragover', (e) => {
@@ -60,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
       preview.src = e.target.result;
       
       preview.onload = () => {
-        // 检查图片尺寸（因为要分成 10 份，高度至少 10px）
+        // 检查图片尺寸（高度至少 10px）
         if (preview.naturalHeight < 10) {
           alert('图片高度太小，无法分区提取颜色');
           loader.style.display = 'none';
@@ -73,13 +72,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // 提取主色
         try {
-          // 1. 提取整个图片的第一个颜色（主色）
+          // 1. 提取整个图片的第一个颜色
           const dominantColors = [extractDominantColors(preview)[0]];
           
-          // 2. 提取图片顶部1/5区域的第一个颜色
+          // 2. 提取图片顶部1/10区域的第一个颜色
           const topColors = [extractRegionColors(preview, 0, 0.1)[0]];
           
-          // 3. 提取图片底部1/5区域的第一个颜色
+          // 3. 提取图片底部1/10区域的第一个颜色
           const bottomColors = [extractRegionColors(preview, 0.9, 1)[0]];
           
           // 显示三个区域的颜色
@@ -90,9 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
           alert('颜色提取失败: ' + error.message);
         } finally {
-          // 隐藏加载动画
           loader.style.display = 'none';
-          // 显示预览区域
           previewSection.classList.remove('hidden');
         }
       };
@@ -104,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 安全提取主色调
   function extractDominantColors(img) {
     try {
-      // 尝试使用ColorThief提取颜色
+      // 尝试使用 ColorThief 提取颜色
       const colors = colorThief.getPalette(img, 3) || [];
       
       // 如果成功提取到颜色，返回结果
@@ -267,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return (1 + 0.05) / (L + 0.05);
   }
 
-  // 调整对比度至2:1以上
+  // 对比度＞2:1的调整
   function adjustContrast(r, g, b) {
     let contrast = getContrastRatio(r, g, b);
     
@@ -287,7 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return hslToRgb(h, s, l);
   }
 
-  // 修改亮度和饱和度调整算法
+  // 亮度和饱和度的调整
   function adjustLightnessSaturation(r, g, b) {
     let [h, s, l] = rgbToHsl(r, g, b);
     
@@ -322,17 +319,14 @@ document.addEventListener('DOMContentLoaded', () => {
     return hslToRgb(h, s, l);
   }
 
-  // 修改深色调整算法
+  // 渐变深色的调整
   function adjustDark(r, g, b) {
     let [h, s, l] = rgbToHsl(r, g, b);
     
-    // H值+10
     h = (h + 10) % 360;
     
-    // S值*0.9
     s = s * 0.9;
     
-    // L值-10 (如果结果小于0则取0)
     l = Math.max(l - 10, 0);
     
     return hslToRgb(h, s, l);

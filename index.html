@@ -1,12 +1,28 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN" lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="The automatic extraction of colors from pictures.">
+  <!-- Open Graph (Facebook/LinkedIn/Pinterest) -->
+  <meta property="og:title" content="DDDropper">
+  <meta property="og:description" content="The automatic extraction of colors from pictures.">
+  <meta property="og:image" content="https://vincent-chew.github.io/Dropper/assets/images/social-share.jpg">
+  <meta property="og:url" content="https://vincent-chew.github.io/Dropper/">
+  <meta property="og:type" content="website">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="DDDropper">
+  <meta name="twitter:description" content="The automatic extraction of colors from pictures.">
+  <meta name="twitter:image" content="https://vincent-chew.github.io/Dropper/assets/images/social-share.jpg">
   <title>Dropper</title>
-  <!-- v0.6.0 -->
+  <meta name="version" content="0.6.1">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="assets/icons/favicon.ico" sizes="any">
+  <link rel="icon" href="assets/icons/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/icons/favicon-apple-touch.png">
+  <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
 </head>
 <body>
@@ -40,19 +56,18 @@
           <div class="spinner"></div>
         </div>
       </div>
-      
-      
+
       <!-- 修改：添加 hidden 类和 id="previewSection" -->
       <div class="preview-section hidden" id="previewSection">
         <div class="preview-area">
           <div id="defaultPreview">
             <p>Null</p>
           </div>
-          <img id="imagePreview" alt="预览图">
+          <img id="imagePreview" alt="Image Preview" title="Image Preview">
         </div>
         
         <div class="results-area">
-          <!-- Created with DeepSeek, Designed by Vincent Chew. -->
+          <!-- Created with DeepSeek, designed by Vincent Chew. -->
           <div id="colorPalette">
             <!-- 主色区域 -->
             <div class="palette-section">
@@ -77,7 +92,7 @@
     </div>
     
     <footer>
-      <p>Created with DeepSeek, Designed by Vincent Chew.</p>
+      <p>Created with DeepSeek, designed by Vincent Chew.</p>
     </footer>
   </div>
   
@@ -90,11 +105,9 @@
 
   <script>
   document.addEventListener('DOMContentLoaded', function() {
-      // 尝试直接移除插件
       const assistantDiv = document.getElementById('__netease-ai-assistant');
       if(assistantDiv) assistantDiv.remove();
 
-      //防止注入
       new MutationObserver(mutations => {
           mutations.forEach(mutation => {
               if(mutation.addedNodes) {
